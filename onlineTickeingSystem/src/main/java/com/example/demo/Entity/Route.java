@@ -1,7 +1,11 @@
 package com.example.demo.Entity;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import jakarta.persistence.*;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,7 +19,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Route {
 	
 	@Id
@@ -24,7 +27,12 @@ public class Route {
 	
 	private String routeName;
 	private String description;
-	private Map<Stops , Float> stopsAndRates;
+	
+    @ElementCollection
+    @CollectionTable(name = "your_map_table_name", joinColumns = @JoinColumn(name = "entity_id"))
+    @MapKeyColumn(name = "map_key")
+    @Column(name = "map_value")
+	private Map<String , Float> stopsAndRates;
 	
 	
 }
