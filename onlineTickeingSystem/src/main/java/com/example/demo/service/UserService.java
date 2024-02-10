@@ -6,6 +6,8 @@ import com.example.demo.payloads.UserDTO;
 
 public interface UserService {
 	
+	UserDTO registerNewUser(UserDTO user) throws Exception;
+	
 	UserDTO createUser ( UserDTO userDto );
 	
 	UserDTO getUserById ( Integer userId );

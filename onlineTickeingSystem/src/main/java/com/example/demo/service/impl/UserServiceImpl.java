@@ -5,11 +5,17 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Entity.Role;
 import com.example.demo.Entity.User;
+import com.example.demo.config.AppConstants;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.payloads.UserDTO;
+import com.example.demo.repo.RoleRepo;
 import com.example.demo.repo.UserRepo;
 import com.example.demo.service.UserService;
 
@@ -21,6 +27,41 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private ModelMapper modelmapper;
+	
+//	@Autowired
+//	private PasswordEncoder passwordEncoder;
+	
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+	
+	@Autowired
+	private RoleRepo roleRepo;
+
+	@Override
+	public UserDTO registerNewUser(UserDTO userDTO)  {
+			
+			
+			User user = this.modelmapper.map(userDTO , User.class);
+			// encoded the password
+			user.setPassword(this.passwordEncoder().encode(user.getPassword()));
+			// roles
+			if ( user.getRoles().equals("User") ) {
+				Role role = this.roleRepo.findById(AppConstants.NORMAL).get();
+				user.getRoles().add(role);
+			}
+			else if ( ( user.getRoles().equals("Conductor") ) ){
+				Role role = this.roleRepo.findById(AppConstants.CONDUCTOR).get();
+				user.getRoles().add(role);
+			}
+			else {
+				Role role = this.roleRepo.findById(AppConstants.NORMAL).get();
+				user.getRoles().add(role);
+			}
+			User newUser = this.userRepo.save(user);
+			return this.modelmapper.map(newUser, UserDTO.class);
+	}
 
 	@Override
 	public UserDTO createUser(UserDTO userDto) {
@@ -42,7 +83,6 @@ public class UserServiceImpl implements UserService {
 		user.setEmail(userDto.getEmail());
 		user.setPassword(userDto.getPassword());
 		user.setPhoneNumber(userDto.getPhoneNumber());
-		user.setRole(userDto.getRole());
 		user.setAdhaarNumber(userDto.getAdhaarNumber());
 		user.setQrCode(userDto.getQrCode());
 
@@ -84,7 +124,6 @@ public class UserServiceImpl implements UserService {
 		user.setEmail(userDTO.getEmail());
 		user.setPassword(userDTO.getPassword());
 		user.setPhoneNumber(userDTO.getPhoneNumber());
-		user.setRole(userDTO.getRole());
 		user.setAdhaarNumber(userDTO.getAdhaarNumber());
 		return user;
 	}
@@ -93,5 +132,6 @@ public class UserServiceImpl implements UserService {
 		UserDTO userDTO = this.modelmapper.map(user, UserDTO.class);
 		return userDTO;
 	}
+
 	
 }
